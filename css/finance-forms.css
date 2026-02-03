@@ -1,0 +1,128 @@
+/* ===== Global Reset ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ===== Body ===== */
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #f4f6f9, #e9eef5);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ===== Card Container ===== */
+.form-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 420px;
+    padding: 25px 22px;
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+
+/* ===== Heading ===== */
+.form-card h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #1f2937;
+    font-weight: 600;
+}
+
+/* ===== Labels ===== */
+.form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* ===== Inputs ===== */
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    outline: none;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.form-group textarea {
+    resize: none;
+    height: 70px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 2px rgba(79,70,229,0.15);
+}
+
+/* ===== Button ===== */
+.btn-primary {
+    width: 100%;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    border: none;
+    padding: 11px;
+    margin-top: 15px;
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(79,70,229,0.35);
+}
+
+/* ===== Messages ===== */
+.message {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.error {
+    color: #dc2626;
+}
+
+.success {
+    color: #16a34a;
+}
+
+/* ===== Footer Link ===== */
+.back-link {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.back-link a {
+    text-decoration: none;
+    font-size: 13px;
+    color: #4f46e5;
+    font-weight: 600;
+}
+
+.back-link a:hover {
+    text-decoration: underline;
+}
+
+/* ===== Mobile Optimization ===== */
+@media (max-width: 480px) {
+    .form-card {
+        margin: 15px;
+        padding: 20px;
+    }
+}
