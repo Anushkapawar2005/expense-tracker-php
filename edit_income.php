@@ -74,36 +74,49 @@ if (isset($_POST['update_income'])) {
 <html>
 <head>
     <title>Edit Income</title>
+    <link rel="stylesheet" href="css/form.css">
 </head>
 <body>
+<div class="form-wrapper">
+    <h2>Edit Income</h2>
 
-<h2>Edit Income</h2>
+    <form method="post">
 
-<form method="post">
-    <label>Amount (₹)</label><br>
-    <input type="number" step="0.01" name="amount"
-           value="<?php echo $income['amount']; ?>" required><br><br>
+        <div class="form-group">
+            <label>Amount (₹)</label>
+            <input type="number" step="0.01" name="amount"
+                   value="<?php echo $income['amount']; ?>" required>
+        </div>
 
-    <label>Source</label><br>
-    <input type="text" name="source"
-           value="<?php echo htmlspecialchars($income['source']); ?>" required><br><br>
+        <div class="form-group">
+            <label>Source</label>
+            <input type="text" name="source"
+                   value="<?php echo htmlspecialchars($income['source']); ?>" required>
+        </div>
 
-    <label>Income Date</label><br>
-    <input type="date" name="income_date"
-           value="<?php echo $income['income_date']; ?>" required><br><br>
+        <div class="form-group">
+            <label>Income Date</label>
+            <input type="date" name="income_date"
+                   value="<?php echo $income['income_date']; ?>" required>
+        </div>
 
-    <label>Description</label><br>
-    <textarea name="description"><?php
-        echo htmlspecialchars($income['description']);
-    ?></textarea><br><br>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea name="description"><?php
+                echo htmlspecialchars($income['description']);
+            ?></textarea>
+        </div>
 
-    <button type="submit" name="update_income">Update Income</button>
-</form>
+        <button type="submit" name="update_income">Update Income</button>
+    </form>
 
-<p style="color:red;"><?php echo $error; ?></p>
-<p style="color:green;"><?php echo $success; ?></p>
+    <div class="message">
+        <?php if ($error) echo "<div class='error'>$error</div>"; ?>
+        <?php if ($success) echo "<div class='success'>$success</div>"; ?>
+    </div>
 
-<a href="view_income.php">Back to Income List</a>
-
+    <div class="back-link">
+        <a href="view_income.php">← Back to Income List</a>
+    </div>
+</div>
 </body>
-</html>

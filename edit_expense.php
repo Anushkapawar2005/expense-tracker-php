@@ -73,36 +73,49 @@ if (isset($_POST['update_expense'])) {
 <html>
 <head>
     <title>Edit Expense</title>
+     <link rel="stylesheet" href="css/form.css">
 </head>
 <body>
+<div class="form-wrapper">
+    <h2>Edit Expense</h2>
 
-<h2>Edit Expense</h2>
+    <form method="post">
 
-<form method="post">
-    <label>Amount (₹)</label><br>
-    <input type="number" step="0.01" name="amount"
-           value="<?php echo $expense['amount']; ?>" required><br><br>
+        <div class="form-group">
+            <label>Amount (₹)</label>
+            <input type="number" step="0.01" name="amount"
+                   value="<?php echo $expense['amount']; ?>" required>
+        </div>
 
-    <label>Category</label><br>
-    <input type="text" name="category"
-           value="<?php echo htmlspecialchars($expense['category_id']); ?>" required><br><br>
+        <div class="form-group">
+            <label>Category</label>
+            <input type="text" name="category"
+                   value="<?php echo htmlspecialchars($expense['category_id']); ?>" required>
+        </div>
 
-    <label>Expense Date</label><br>
-    <input type="date" name="expense_date"
-           value="<?php echo $expense['expense_date']; ?>" required><br><br>
+        <div class="form-group">
+            <label>Expense Date</label>
+            <input type="date" name="expense_date"
+                   value="<?php echo $expense['expense_date']; ?>" required>
+        </div>
 
-    <label>Description</label><br>
-    <textarea name="description"><?php
-        echo htmlspecialchars($expense['description']);
-    ?></textarea><br><br>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea name="description"><?php
+                echo htmlspecialchars($expense['description']);
+            ?></textarea>
+        </div>
 
-    <button type="submit" name="update_expense">Update Expense</button>
-</form>
+        <button type="submit" name="update_expense">Update Expense</button>
+    </form>
 
-<p style="color:red;"><?php echo $error; ?></p>
-<p style="color:green;"><?php echo $success; ?></p>
+    <div class="message">
+        <?php if($error) echo "<div class='error'>$error</div>"; ?>
+        <?php if($success) echo "<div class='success'>$success</div>"; ?>
+    </div>
 
-<a href="view_expense.php">Back to Expenses</a>
-
+    <div class="back-link">
+        <a href="view_expense.php">← Back to Expenses</a>
+    </div>
+</div>
 </body>
-</html>
