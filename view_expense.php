@@ -2,7 +2,7 @@
 session_start();
 include "db_connect.php";
 
-// Check login
+// Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
@@ -11,10 +11,11 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // Fetch expenses with category name
-$sql = "SELECT e.expense_id, e.amount, e.expense_date, e.description,
-               c.category_name
+$sql = "SELECT e.expense_id, e.amount, e.expense_date, 
+               e.description, c.category_name
         FROM expenses e
-        JOIN categories c ON e.category_id = c.category_id
+        JOIN categories c 
+          ON e.category_id = c.category_id
         WHERE e.user_id = '$user_id'
         ORDER BY e.expense_date DESC";
 
@@ -22,69 +23,97 @@ $result = mysqli_query($conn, $sql);
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>View Expenses</title>
-    <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        th, td {
-            border: 1px solid #999;
-            padding: 8px;
-            text-align: center;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>View Expenses</title>
+
+<!-- Same CSS as Income Page -->
+<link rel="stylesheet" href="css/table.css">
+
+
 </head>
+
 <body>
 
-<h2>My Expenses</h2>
+<h2>All Expense Records</h2>
+
+<!-- Top Controls -->
+<div class="top-bar">
+
+    <div>
+        <a class="btn" href="add_expense.php">+ Add Expense</a>
+        <a class="btn" href="dashboard.php">← Dashboard</a>
+    </div>
+
+</div>
+
+<!-- Table Card -->
+<div class="table-card">
 
 <table>
-    <tr>
-        <th>Date</th>
-        <th>Category</th>
-        <th>Amount (₹)</th>
-        <th>Description</th>
-        <th>Actions</th>
-    </tr>
 
-    <?php
-if (mysqli_num_rows($result) > 0) {
-    while ($row = mysqli_fetch_assoc($result)) {
+<tr>
+    <th>ID</th>
+    <th>Amount (₹)</th>
+    <th>Category</th>
+    <th>Date</th>
+    <th>Description</th>
+    <th>Actions</th>
+</tr>
 
-        echo "<tr>";
-        echo "<td>" . $row['expense_date'] . "</td>";
-        echo "<td>" . $row['category_name'] . "</td>";
-        echo "<td>" . number_format($row['amount'], 2) . "</td>";
-        echo "<td>" . $row['description'] . "</td>";
+<?php if (mysqli_num_rows($result) > 0): ?>
 
-        // Actions column
-        echo "<td>
-                <a href='edit_expense.php?id=" . $row['expense_id'] . "'>Edit</a> |
-                <a href='delete_expense.php?id=" . $row['expense_id'] . "'
-                   onclick=\"return confirm('Do you want to delete this expense?');\">
+    <?php while ($row = mysqli_fetch_assoc($result)): ?>
+
+        <tr>
+
+            <td><?php echo $row['expense_id']; ?></td>
+
+            <td>₹ <?php echo number_format($row['amount'], 2); ?></td>
+
+            <td>
+                <?php echo htmlspecialchars($row['category_name']); ?>
+            </td>
+
+            <td><?php echo $row['expense_date']; ?></td>
+
+            <td>
+                <?php echo htmlspecialchars($row['description']); ?>
+            </td>
+
+            <td class="action-links">
+
+                <a class="edit-btn"
+                   href="edit_expense.php?id=<?php echo $row['expense_id']; ?>">
+                   Edit
+                </a>
+
+                <a class="delete-btn"
+                   href="delete_expense.php?id=<?php echo $row['expense_id']; ?>"
+                   onclick="return confirm('Do you want to delete this expense?');">
                    Delete
                 </a>
-              </td>";
 
-        echo "</tr>";
-    }
-} else {
-    echo "<tr>
-            <td colspan='5' style='text-align:center;'>No expenses found.</td>
-          </tr>";
-}
-?>
+            </td>
+
+        </tr>
+
+    <?php endwhile; ?>
+
+<?php else: ?>
+
+    <tr>
+        <td colspan="6" class="no-data">
+            No expense records found.
+        </td>
+    </tr>
+
+<?php endif; ?>
 
 </table>
 
-<br>
-<a href="dashboard.php">Back to Dashboard</a>
+</div>
 
 </body>
 </html>
