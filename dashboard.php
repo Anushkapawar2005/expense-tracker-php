@@ -49,167 +49,8 @@ $net_balance = $month_income - $month_expense;
 <html>
 <head>
     <title>Dashboard</title>
-    <style>
-       /* =====================
-   Global Reset & Base
-===================== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+    <link rel="stylesheet" href="css/dashboard.css">
 
-body {
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: #f4f6f9;
-    color: #2c3e50;
-    padding: 30px;
-}
-
-/* =====================
-   Welcome Section
-===================== */
-.welcome {
-    background: linear-gradient(135deg, #1d3557, #457b9d);
-    color: #fff;
-    padding: 25px 30px;
-    border-radius: 12px;
-    margin-bottom: 30px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
-}
-
-.welcome h2 {
-    font-size: 26px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.welcome p {
-    font-size: 15px;
-    opacity: 0.9;
-}
-
-/* =====================
-   Navigation Buttons
-===================== */
-.nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 35px;
-}
-
-.nav a {
-    background: #ffffff;
-    color: #1d3557;
-    padding: 12px 20px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 500;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-}
-
-.nav a:hover {
-    background: #1d3557;
-    color: #ffffff;
-    transform: translateY(-3px);
-    box-shadow: 0 10px 22px rgba(29, 53, 87, 0.35);
-}
-/* ===== Summary Section ===== */
-.summary {
-    margin-top: 30px;
-}
-
-.summary h3 {
-    font-size: 22px;
-    margin-bottom: 20px;
-    color: #1d3557;
-    border-left: 5px solid #457b9d;
-    padding-left: 12px;
-}
-
-/* ===== Card Layout ===== */
-.cards {
-    display: grid;
-    gap: 20px;
-    margin-bottom: 25px;
-}
-
-.cards-top {
-    grid-template-columns: repeat(4, 1fr);
-}
-
-.cards-bottom {
-    grid-template-columns: repeat(3, 1fr);
-}
-
-/* ===== Card Base ===== */
-.card {
-    background: #ffffff;
-    padding: 22px;
-    border-radius: 14px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.card::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 6px;
-    height: 100%;
-}
-
-.card h4 {
-    font-size: 14px;
-    text-transform: uppercase;
-    color: #555;
-    margin-bottom: 8px;
-}
-
-.card p {
-    font-size: 24px;
-    font-weight: 700;
-    color: #1d3557;
-    margin-bottom: 5px;
-}
-
-.card span {
-    font-size: 13px;
-    color: #777;
-}
-
-/* ===== Hover Interaction ===== */
-.card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 18px 35px rgba(0, 0, 0, 0.15);
-}
-
-/* ===== Card Color Codes ===== */
-.primary::before { background: #1d3557; }
-.success::before { background: #2a9d8f; }
-.warning::before { background: #f4a261; }
-.danger::before  { background: #e63946; }
-.info::before    { background: #457b9d; }
-.neutral::before { background: #6c757d; }
-.dark::before    { background: #343a40; }
-
-/* ===== Responsive ===== */
-@media (max-width: 992px) {
-    .cards-top {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .cards-bottom {
-        grid-template-columns: repeat(1, 1fr);
-    }
-}
-
-    </style>
 </head>
 <body>
 
@@ -278,7 +119,68 @@ body {
             <span>Lifetime earnings</span>
         </div>
     </div>
+    <div class="charts">
+
+    <div class="chart-box">
+        <h3>Income vs Expense</h3>
+        <canvas id="barChart"></canvas>
+    </div>
+
+    <div class="chart-box">
+        <h3>Expense Distribution</h3>
+        <canvas id="pieChart"></canvas>
+    </div>
+
 </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+
+const barCtx = document.getElementById('barChart');
+
+new Chart(barCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Income','Expense'],
+        datasets: [{
+            data: [
+                <?php echo $month_income; ?>,
+                <?php echo $month_expense; ?>
+            ],
+            backgroundColor:['#2a9d8f','#e63946']
+        }]
+    }
+});
+
+</script>
+
+<script>
+
+const pieCtx = document.getElementById('pieChart');
+
+new Chart(pieCtx, {
+    type: 'pie',
+    data: {
+        labels: ['Spent', 'Remaining'],
+        datasets: [{
+            data: [
+                <?php echo $month_expense; ?>,
+                <?php echo $remaining_budget; ?>
+            ],
+            backgroundColor: [
+                '#e63946',
+                '#2a9d8f'
+            ]
+        }]
+    },
+    options:{
+        responsive:true
+    }
+});
+
+</script>
 
 
 </body>
