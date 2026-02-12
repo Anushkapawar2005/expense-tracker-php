@@ -46,7 +46,7 @@ if (isset($_POST['update_expense'])) {
     } else {
         $update = $conn->prepare(
             "UPDATE expenses 
-             SET amount=?, category=?, expense_date=?, description=? 
+             SET amount=?, category_id=?, expense_date=?, description=? 
              WHERE expense_id=? AND user_id=?"
         );
         $update->bind_param(
