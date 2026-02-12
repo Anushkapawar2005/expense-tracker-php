@@ -165,19 +165,24 @@ new Chart(pieCtx, {
     data: {
         labels: ['Spent', 'Remaining'],
         datasets: [{
+            
             data: [
                 <?php echo $month_expense; ?>,
                 <?php echo $remaining_budget; ?>
             ],
+            
             backgroundColor: [
                 '#e63946',
                 '#2a9d8f'
             ]
+            
         }]
     },
     options:{
-        responsive:true
-    }
+    responsive:true,
+   
+}
+
 });
 
 </script>

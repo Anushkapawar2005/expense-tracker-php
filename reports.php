@@ -2,28 +2,32 @@
 session_start();
 include "db_connect.php";
 
-// Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
-
-// Current month
 $current_month = date('Y-m');
 
-// --- 1. Month-wise Expenses ---
+// Month-wise Expenses
 $month_expense_query = mysqli_query($conn, "
-    SELECT DATE_FORMAT(expense_date, '%Y-%m') AS month, SUM(amount) AS total
+    SELECT DATE_FORMAT(expense_date, '%b %Y') AS month, SUM(amount) AS total
     FROM expenses
     WHERE user_id='$user_id'
     GROUP BY month
-    ORDER BY month DESC
+    ORDER BY expense_date ASC
 ");
 
-// --- 2. Category-wise Expenses ---
-$category_expense_query = mysqli_query($conn, "
+$expense_months = [];
+$expense_totals = [];
+while($row = mysqli_fetch_assoc($month_expense_query)){
+    $expense_months[] = $row['month'];
+    $expense_totals[] = $row['total'];
+}
+
+// Category-wise Expenses
+$category_query = mysqli_query($conn, "
     SELECT c.category_name, SUM(e.amount) AS total
     FROM expenses e
     JOIN categories c ON e.category_id = c.category_id
@@ -31,121 +35,238 @@ $category_expense_query = mysqli_query($conn, "
     GROUP BY e.category_id
 ");
 
-// --- 3. Highest Spending Category ---
-$highest_category_query = mysqli_query($conn, "
-    SELECT c.category_name, SUM(e.amount) AS total
-    FROM expenses e
-    JOIN categories c ON e.category_id = c.category_id
-    WHERE e.user_id='$user_id'
-    GROUP BY e.category_id
-    ORDER BY total DESC
-    LIMIT 1
-");
-$top_category = mysqli_fetch_assoc($highest_category_query);
+$categories = [];
+$category_totals = [];
+while($row = mysqli_fetch_assoc($category_query)){
+    $categories[] = $row['category_name'];
+    $category_totals[] = $row['total'];
+}
 
-// --- 4. Month-wise Income ---
-$month_income_query = mysqli_query($conn, "
-    SELECT DATE_FORMAT(income_date, '%Y-%m') AS month, SUM(amount) AS total
-    FROM income
-    WHERE user_id='$user_id'
-    GROUP BY month
-    ORDER BY month DESC
-");
-
-// --- 5. Budget vs Expense & Net Balance (Current Month) ---
-$budget_query = mysqli_query($conn, "
-    SELECT total_budget
-    FROM budgets
+// Current Month Summary
+$budget = mysqli_fetch_assoc(mysqli_query($conn, "
+    SELECT total_budget FROM budgets
     WHERE user_id='$user_id' AND month='$current_month'
-");
-$budget_row = mysqli_fetch_assoc($budget_query);
-$total_budget = $budget_row['total_budget'] ?? 0;
+"))['total_budget'] ?? 0;
 
-$expense_query = mysqli_query($conn, "
-    SELECT SUM(amount) AS total
-    FROM expenses
-    WHERE user_id='$user_id' AND DATE_FORMAT(expense_date, '%Y-%m')='$current_month'
-");
-$expense_row = mysqli_fetch_assoc($expense_query);
-$total_expense = $expense_row['total'] ?? 0;
+$expense = mysqli_fetch_assoc(mysqli_query($conn, "
+    SELECT SUM(amount) AS total FROM expenses
+    WHERE user_id='$user_id'
+    AND DATE_FORMAT(expense_date,'%Y-%m')='$current_month'
+"))['total'] ?? 0;
 
-$income_query = mysqli_query($conn, "
-    SELECT SUM(amount) AS total
-    FROM income
-    WHERE user_id='$user_id' AND DATE_FORMAT(income_date, '%Y-%m')='$current_month'
-");
-$income_row = mysqli_fetch_assoc($income_query);
-$total_income = $income_row['total'] ?? 0;
+$income = mysqli_fetch_assoc(mysqli_query($conn, "
+    SELECT SUM(amount) AS total FROM income
+    WHERE user_id='$user_id'
+    AND DATE_FORMAT(income_date,'%Y-%m')='$current_month'
+"))['total'] ?? 0;
 
-$net_balance = $total_income - $total_expense;
+$balance = $income - $expense;
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Expense & Income Reports</title>
+    <title>Interactive Reports Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h2, h3 { color: #333; }
-        table { border-collapse: collapse; width: 60%; margin-bottom: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background-color: #007bff; color: white; }
-        a { text-decoration: none; color: #007bff; }
+        body{
+            font-family: Arial, sans-serif;
+            margin:0;
+            background:#f4f6f9;
+        }
+
+        .header{
+            background:#111827;
+            color:white;
+            padding:15px 30px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+
+        .container{
+            padding:30px;
+        }
+
+        .cards{
+            display:grid;
+            grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+            gap:20px;
+            margin-bottom:30px;
+        }
+
+        .card{
+            background:white;
+            padding:20px;
+            border-radius:15px;
+            box-shadow:0 4px 10px rgba(0,0,0,0.08);
+            transition:0.3s;
+        }
+
+        .card:hover{
+            transform:translateY(-5px);
+        }
+
+        .card h3{
+            margin:0;
+            color:#6b7280;
+            font-size:14px;
+        }
+
+        .card h2{
+            margin-top:10px;
+            color:#111827;
+        }
+        /* Blue → Budget */
+.card-blue{
+    background: linear-gradient(135deg,#2193b0,#6dd5ed);
+}
+
+/* Red → Expense */
+.card-red{
+    background: linear-gradient(135deg,#ff416c,#ff4b2b);
+}
+
+/* Green → Income */
+.card-green{
+    background: linear-gradient(135deg,#11998e,#38ef7d);
+}
+
+/* Dark Blue → Balance */
+.card-darkblue{
+    background: linear-gradient(135deg,#396afc,#2948ff);
+}
+
+/* Optional Extra (if needed later) */
+.card-orange{
+    background: linear-gradient(135deg,#f7971e,#ffd200);
+}
+
+        .charts{
+            display:grid;
+            grid-template-columns: repeat(auto-fit,minmax(400px,1fr));
+            gap:30px;
+        }
+
+        .chart-box{
+            background:white;
+            padding:20px;
+            border-radius:15px;
+            box-shadow:0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        canvas{
+            width:100% !important;
+            height:350px !important;
+        }
+
+        .back-btn{
+            text-decoration:none;
+            color:white;
+            background:#2563eb;
+            padding:8px 14px;
+            border-radius:8px;
+            font-size:14px;
+        }
     </style>
 </head>
 <body>
 
-<h2>Reports Dashboard</h2>
-<a href="dashboard.php">Back to Dashboard</a>
-<hr>
+<div class="header">
+    <h2>Reports Dashboard</h2>
+    <a class="back-btn" href="dashboard.php">Back</a>
+</div>
 
-<h3>1. Month-wise Expenses</h3>
-<table>
-<tr><th>Month</th><th>Total Expense (₹)</th></tr>
-<?php while($row = mysqli_fetch_assoc($month_expense_query)) { ?>
-<tr>
-    <td><?php echo $row['month']; ?></td>
-    <td><?php echo number_format($row['total'], 2); ?></td>
-</tr>
-<?php } ?>
-</table>
+<div class="container">
 
-<h3>2. Category-wise Expenses</h3>
-<table>
-<tr><th>Category</th><th>Total (₹)</th></tr>
-<?php while($row = mysqli_fetch_assoc($category_expense_query)) { ?>
-<tr>
-    <td><?php echo htmlspecialchars($row['category_name']); ?></td>
-    <td><?php echo number_format($row['total'], 2); ?></td>
-</tr>
-<?php } ?>
-</table>
+    <!-- Summary Cards -->
+   <div class="cards">
 
-<h3>3. Highest Spending Category</h3>
-<p>
-    Category: <b><?php echo htmlspecialchars($top_category['category_name'] ?? 'N/A'); ?></b><br>
-    Amount: ₹<?php echo number_format($top_category['total'] ?? 0, 2); ?>
-</p>
+    <div class="card card-blue">
+        <h3>Total Budget</h3>
+        <h2>₹ <?php echo number_format($budget,2); ?></h2>
+    </div>
 
-<h3>4. Month-wise Income</h3>
-<table>
-<tr><th>Month</th><th>Total Income (₹)</th></tr>
-<?php while($row = mysqli_fetch_assoc($month_income_query)) { ?>
-<tr>
-    <td><?php echo $row['month']; ?></td>
-    <td><?php echo number_format($row['total'], 2); ?></td>
-</tr>
-<?php } ?>
-</table>
+    <div class="card card-red">
+        <h3>Total Expense</h3>
+        <h2>₹ <?php echo number_format($expense,2); ?></h2>
+    </div>
 
-<h3>5. Budget vs Expense & Net Balance (Current Month)</h3>
-<table>
-<tr><th>Metric</th><th>Amount (₹)</th></tr>
-<tr><td>Total Budget</td><td><?php echo number_format($total_budget, 2); ?></td></tr>
-<tr><td>Total Expense</td><td><?php echo number_format($total_expense, 2); ?></td></tr>
-<tr><td>Total Income</td><td><?php echo number_format($total_income, 2); ?></td></tr>
-<tr><td><strong>Net Balance</strong></td><td><strong><?php echo number_format($net_balance, 2); ?></strong></td></tr>
-</table>
+    <div class="card card-green">
+        <h3>Total Income</h3>
+        <h2>₹ <?php echo number_format($income,2); ?></h2>
+    </div>
+
+    <div class="card card-darkblue">
+        <h3>Net Balance</h3>
+        <h2>₹ <?php echo number_format($balance,2); ?></h2>
+    </div>
+
+    </div>
+
+
+</div>
+
+    <!-- Charts -->
+    <div class="charts">
+
+        <div class="chart-box">
+            <h3>Month‑wise Expenses</h3>
+            <canvas id="expenseChart"></canvas>
+        </div>
+
+        <div class="chart-box">
+            <h3>Category‑wise Expenses</h3>
+            <canvas id="categoryChart"></canvas>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+// Expense Line Chart
+new Chart(document.getElementById('expenseChart'),{
+    type:'line',
+    data:{
+        labels: <?php echo json_encode($expense_months); ?>,
+        datasets:[{
+            label:'Expenses',
+            data: <?php echo json_encode($expense_totals); ?>,
+            borderWidth:3,
+            fill:true,
+            tension:0.4
+        }]
+    },
+    options:{
+        responsive:true,
+        plugins:{
+            legend:{display:true}
+        }
+    }
+});
+
+// Category Doughnut Chart
+new Chart(document.getElementById('categoryChart'),{
+    type:'doughnut',
+    data:{
+        labels: <?php echo json_encode($categories); ?>,
+        datasets:[{
+            data: <?php echo json_encode($category_totals); ?>,
+            borderWidth:1
+        }]
+    },
+    options:{
+        responsive:true,
+        plugins:{
+            legend:{position:'bottom'}
+        }
+    }
+});
+
+</script>
 
 </body>
 </html>
