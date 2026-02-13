@@ -11,24 +11,24 @@ $user_id = $_SESSION['user_id'];
 $error = "";
 $success = "";
 
-// Fetch categories
-$cat_result = mysqli_query($conn, "
-    SELECT * FROM categories 
+/* Fetch Categories */
+$cat_result = mysqli_query($conn,"
+    SELECT * FROM categories
     WHERE user_id='$user_id'
 ");
 
-// Add Expense Logic
-if (isset($_POST['add_expense'])) {
+/* Add Expense Logic */
+if(isset($_POST['add_expense'])){
 
-    $category_id = $_POST['category_id'];
-    $amount = $_POST['amount'];
+    $category_id  = $_POST['category_id'];
+    $amount       = $_POST['amount'];
     $expense_date = $_POST['expense_date'];
-    $description = $_POST['description'];
+    $description  = $_POST['description'];
 
-    if (empty($category_id) || empty($amount) || empty($expense_date)) {
+    if(empty($category_id) || empty($amount) || empty($expense_date)){
         $error = "Please fill all required fields.";
-    } 
-    else {
+    }
+    else{
 
         $stmt = $conn->prepare("
             INSERT INTO expenses
@@ -45,9 +45,9 @@ if (isset($_POST['add_expense'])) {
             $description
         );
 
-        if ($stmt->execute()) {
+        if($stmt->execute()){
             $success = "Expense added successfully.";
-        } else {
+        }else{
             $error = "Failed to add expense.";
         }
 
@@ -61,7 +61,62 @@ if (isset($_POST['add_expense'])) {
 <head>
     <title>Add Expense</title>
     <link rel="stylesheet" href="css/form.css">
+
+    <!-- Internal CSS for Add Category Button -->
+    <style>
+
+    /* Category Button Design */
+    .add-category-btn2{
+        display:inline-flex;
+        align-items:center;
+        gap:5px;
+
+        margin-top:12px;
+        padding:5px 8px;
+
+        font-size:13px;
+        font-weight:600;
+
+        color:black;
+        background:linear-gradient(135deg,#eef2ff,#e0e7ff);
+
+        border:1px solid #c7d2fe;
+        border-radius:12px;
+
+        text-decoration:none;
+        transition:all 0.30s ease;
+    }
+
+    .add-category-btn2 .icon{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+
+        width:22px;
+        height:22px;
+
+        background:#4f46e5;
+        color:#fff;
+
+        font-size:14px;
+        border-radius:6px;
+    }
+
+    .add-category-btn2:hover{
+        background:linear-gradient(135deg,#4f46e5,#6366f1);
+        color:#fff;
+        transform:translateY(-2px);
+        box-shadow:0 10px 20px rgba(79,70,229,0.35);
+    }
+
+    .add-category-btn2:hover .icon{
+        background:#fff;
+        color:#4f46e5;
+    }
+
+    </style>
 </head>
+
 <body>
 
 <div class="form-wrapper">
@@ -73,26 +128,24 @@ if (isset($_POST['add_expense'])) {
         <!-- Category -->
         <div class="form-group">
 
-            <label>
-                Category
-                <a href="add_category.php"
-                   style="font-size:12px; margin-left:10px;">
-                   + Add New
-                </a>
-            </label>
+            <label>Category</label>
 
             <select name="category_id" required>
                 <option value="">Select Category</option>
 
-                <?php 
-                while($row = mysqli_fetch_assoc($cat_result)) { 
-                ?>
+                <?php while($row=mysqli_fetch_assoc($cat_result)){ ?>
                     <option value="<?php echo $row['category_id']; ?>">
                         <?php echo $row['category_name']; ?>
                     </option>
                 <?php } ?>
 
             </select>
+
+            <!-- Add Category Button -->
+            <a href="add_category.php" class="add-category-btn2">
+                <span class="icon">＋</span>
+                Add New Category
+            </a>
 
         </div>
 
