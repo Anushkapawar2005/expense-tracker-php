@@ -1,0 +1,100 @@
+body{
+            font-family: Arial, sans-serif;
+            margin:0;
+            background:#f4f6f9;
+        }
+
+        .header{
+            background:#111827;
+            color:white;
+            padding:15px 30px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+
+        .container{
+            padding:30px;
+        }
+
+        .cards{
+            display:grid;
+            grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+            gap:20px;
+            margin-bottom:30px;
+        }
+
+        .card{
+            background:white;
+            padding:20px;
+            border-radius:15px;
+            box-shadow:0 4px 10px rgba(0,0,0,0.08);
+            transition:0.3s;
+        }
+
+        .card:hover{
+            transform:translateY(-5px);
+        }
+
+        .card h3{
+            margin:0;
+            color:#6b7280;
+            font-size:14px;
+        }
+
+        .card h2{
+            margin-top:10px;
+            color:#111827;
+        }
+        /* Blue → Budget */
+.card-blue{
+    background: linear-gradient(135deg,#2193b0,#6dd5ed);
+}
+
+/* Red → Expense */
+.card-red{
+    background: linear-gradient(135deg,#ff416c,#ff4b2b);
+}
+
+/* Green → Income */
+.card-green{
+    background: linear-gradient(135deg,#11998e,#38ef7d);
+}
+
+/* Dark Blue → Balance */
+.card-darkblue{
+    background: linear-gradient(135deg,#396afc,#2948ff);
+}
+
+/* Optional Extra (if needed later) */
+.card-orange{
+    background: linear-gradient(135deg,#f7971e,#ffd200);
+}
+
+        .charts{
+            display:grid;
+            grid-template-columns: repeat(auto-fit,minmax(400px,1fr));
+            gap:30px;
+        }
+
+        .chart-box{
+            background:white;
+            padding:20px;
+            border-radius:15px;
+            box-shadow:0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        canvas{
+            width:100% !important;
+            height:350px !important;
+        }
+
+        .back-btn{
+            text-decoration:none;
+            color:white;
+            background:#2563eb;
+            padding:8px 14px;
+            border-radius:8px;
+            font-size:14px;
+        }
+    

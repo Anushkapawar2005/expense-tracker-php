@@ -90,10 +90,6 @@ $remaining = $total_budget - $total_expense;
 
 <link rel="stylesheet" href="css/budget.css">
 
-<style>
-
-
-</style>
 </head>
 
 <body>
