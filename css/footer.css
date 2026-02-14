@@ -1,0 +1,22 @@
+.main-footer{
+    margin-top:20px;
+    padding:18px;
+
+    background:#1d3557;
+    color:#fff;
+
+    text-align:center;
+    border-radius:12px;
+
+    box-shadow:0 -6px 18px rgba(0,0,0,.15);
+}
+
+.footer-content p{
+    margin:4px 0;
+    font-size:14px;
+}
+
+.tagline{
+    font-size:12px;
+    opacity:.85;
+}

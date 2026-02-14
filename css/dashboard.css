@@ -21,7 +21,7 @@ body{
     background:linear-gradient(135deg,#1d3557,#457b9d);
     color:#fff;
     padding:25px 30px;
-    border-radius:14px;
+    /* border-radius:14px; */
     margin-bottom:30px;
     box-shadow:0 10px 25px rgba(0,0,0,0.15);
 }

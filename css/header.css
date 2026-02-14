@@ -1,0 +1,95 @@
+/* ================= HEADER BASE ================= */
+
+.main-header{
+    position:sticky;
+    top:0;
+    z-index:1000;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:15px 30px;
+
+    background:linear-gradient(135deg,#1d3557,#457b9d);
+    color:#fff;
+
+    /* Remove shadow to avoid separation line */
+    box-shadow:none;
+}
+
+
+/* Logo */
+
+.logo{
+    font-size:20px;
+    font-weight:600;
+    letter-spacing:.5px;
+}
+
+/* Menu */
+
+.menu{
+    display:flex;
+    gap:18px;
+}
+
+.menu a{
+    text-decoration:none;
+    color:#fff;
+    font-size:14px;
+    font-weight:500;
+    padding:8px 14px;
+    border-radius:8px;
+    transition:.3s;
+}
+
+/* Hover Effect */
+
+.menu a:hover{
+    background:rgba(255,255,255,.15);
+}
+
+/* Logout Highlight */
+
+.logout{
+    background:#e63946;
+}
+
+.logout:hover{
+    background:#ff6b6b;
+}
+
+/* Mobile Toggle */
+
+.toggle{
+    display:none;
+    font-size:22px;
+    cursor:pointer;
+}
+
+/* ============ Responsive ============ */
+
+@media(max-width:768px){
+
+    .menu{
+        position:absolute;
+        top:65px;
+        right:0;
+
+        background:#1d3557;
+        flex-direction:column;
+        width:200px;
+        padding:15px;
+
+        display:none;
+    }
+
+    .menu.active{
+        display:flex;
+    }
+
+    .toggle{
+        display:block;
+    }
+}

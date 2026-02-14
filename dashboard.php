@@ -50,9 +50,15 @@ $net_balance = $month_income - $month_expense;
 <head>
     <title>Dashboard</title>
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/header.css">
+<link rel="stylesheet" href="css/footer.css">
+<link rel="stylesheet" href="css/dashboard.css">
+
 
 </head>
 <body>
+    <?php include "includes/header.php"; ?>
+
 
 <div class="welcome">
     <h2>Welcome, <?php echo htmlspecialchars($user_name); ?>!</h2>
@@ -187,6 +193,7 @@ new Chart(pieCtx, {
 
 </script>
 
+<?php include "includes/footer.php"; ?>
 
 </body>
 </html>
