@@ -55,132 +55,185 @@ if(isset($_POST['add_income'])){
 <html>
 <head>
     <title>Add Income</title>
-    <link rel="stylesheet" href="css/form.css">
 
-    <!-- Source Button Styling -->
-    <style>
+    <!-- CSS FILES -->
+     
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/footer.css">
 
-    /* Add Source Button */
-    .add-source-btn{
-        display:inline-flex;
-        align-items:center;
-        gap:6px;
+<style>
 
-        margin-top:12px;
-        padding:6px 10px;
+/* ===== PAGE LAYOUT FIX ===== */
 
-        font-size:13px;
-        font-weight:600;
+    
 
-        color:#065f46;
-        background:linear-gradient(135deg,#ecfdf5,#d1fae5);
 
-        border:1px solid #a7f3d0;
-        border-radius:12px;
+body{
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:#f4f6f9;
+    margin: 0px;
 
-        text-decoration:none;
-        transition:all 0.30s ease;
-    }
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+}
 
-    /* Icon Box */
-    .add-source-btn .icon{
-        display:flex;
-        align-items:center;
-        justify-content:center;
+/* Center Section */
 
-        width:22px;
-        height:22px;
+.page-content{
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px 10px;
+}
 
-        background:#10b981;
-        color:#fff;
+/* ===== FORM DESIGN ===== */
 
-        font-size:14px;
-        border-radius:6px;
-    }
+.form-wrapper{
+    background:#fff;
+    padding:10px 20px;
+    border-radius:15px;
+    box-shadow:0 15px 40px rgba(0,0,0,0.08);
+    width:90%;
+    max-width:420px;
+}
 
-    /* Hover */
-    .add-source-btn:hover{
-        background:linear-gradient(135deg,#10b981,#34d399);
-        color:#fff;
-        transform:translateY(-2px);
-        box-shadow:0 10px 20px rgba(16,185,129,0.35);
-    }
+h2{
+    text-align:center;
+    margin-bottom:25px;
+    font-size:24px;
+    font-weight:700;
+    color:#1f2937;
+}
 
-    .add-source-btn:hover .icon{
-        background:#fff;
-        color:#10b981;
-    }
+.form-group{ margin-bottom:17px; }
 
-    </style>
+label{
+    display:block;
+    font-weight:600;
+    margin-bottom:4px;
+    color:#374151;
+    font-size:14px;
+}
+
+input,select,textarea{
+    width:90%;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1px solid #d1d5db;
+    font-size:14px;
+}
+ select {
+           width: 97%
+             
+        }
+textarea{
+    resize:none;
+    height:70px;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    background:linear-gradient(135deg,#4f46e5,#6366f1);
+    color:#fff;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+}
+
+.message{ text-align:center; margin-top:12px; }
+.error{ color:#dc2626; }
+.success{ color:#16a34a; }
+
+/* Add Source Button */
+
+.add-source-btn{
+    display:inline-flex;
+    gap:6px;
+    margin-top:10px;
+    padding:6px 10px;
+    font-size:13px;
+    font-weight:600;
+    color:#065f46;
+    background:#d1fae5;
+    border-radius:10px;
+    text-decoration:none;
+}
+        /* Mobile Optimization */
+        @media (max-width: 480px) {
+            .form-wrapper {
+                padding: 25px 20px;
+            }
+ 
+        }
+
+</style>
 </head>
 
 <body>
 
+<!-- ===== HEADER ===== -->
+<?php include "includes/header.php"; ?>
+
+<!-- ===== CENTER CONTENT ===== -->
+<div class="page-content">
+
 <div class="form-wrapper">
 
-    <h2>Add Income</h2>
+<h2>Add Income</h2>
 
-    <form method="post">
+<form method="post">
 
-        <!-- Amount -->
-        <div class="form-group">
-            <label>Amount (₹)</label>
-            <input type="number" step="0.01" name="amount" placeholder="Enter amount" required>
-        </div>
+<div class="form-group">
+<label>Amount (₹)</label>
+<input type="number" step="0.01" name="amount" required>
+</div>
 
-        <!-- Source -->
-        <div class="form-group">
+<div class="form-group">
+<label>Income Source</label>
 
-            <label>Income Source</label>
+<select name="source" required>
+<option value="">Select source</option>
+<option>Salary</option>
+<option>Freelance</option>
+<option>Gift</option>
+<option>Business</option>
+<option>Other</option>
+</select>
 
-            <select name="source" required>
-                <option value="">Select source</option>
-                <option value="Salary">Salary</option>
-                <option value="Freelance">Freelance</option>
-                <option value="Gift">Gift</option>
-                <option value="Business">Business</option>
-                <option value="Other">Other</option>
-            </select>
+<a href="add_source.php" class="add-source-btn">
+＋ Add New Source
+</a>
+</div>
 
-            <!-- Add Source Button -->
-            <a href="add_source.php" class="add-source-btn">
-                <span class="icon">＋</span>
-                Add New Source
-            </a>
+<div class="form-group">
+<label>Income Date</label>
+<input type="date" name="income_date" required>
+</div>
 
-        </div>
+<div class="form-group">
+<label>Description</label>
+<textarea name="description"></textarea>
+</div>
 
-        <!-- Date -->
-        <div class="form-group">
-            <label>Income Date</label>
-            <input type="date" name="income_date" required>
-        </div>
+<button type="submit" name="add_income">
+Add Income
+</button>
 
-        <!-- Description -->
-        <div class="form-group">
-            <label>Description (Optional)</label>
-            <textarea name="description"
-             placeholder="Enter a short description"></textarea>
-        </div>
+</form>
 
-        <button type="submit" name="add_income">
-            Add Income
-        </button>
-
-    </form>
-
-    <!-- Messages -->
-    <div class="message">
-        <?php if($error) echo "<div class='error'>$error</div>"; ?>
-        <?php if($success) echo "<div class='success'>$success</div>"; ?>
-    </div>
-
-    <!-- Back -->
-    <div class="back-link">
-        <a href="dashboard.php">← Back to Dashboard</a>
-    </div>
+<div class="message">
+<?php if($error) echo "<div class='error'>$error</div>"; ?>
+<?php if($success) echo "<div class='success'>$success</div>"; ?>
+</div>
 
 </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<?php include "includes/footer.php"; ?>
 
 </body>
 </html>
