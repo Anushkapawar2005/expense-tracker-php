@@ -54,7 +54,12 @@ $net_balance = $month_income - $month_expense;
 <link rel="stylesheet" href="css/footer.css">
 <link rel="stylesheet" href="css/dashboard.css">
 
-
+<style>
+    .welcome 
+    {
+        border-radius:0px;
+    }
+    </style>
 </head>
 <body>
     <?php include "includes/header.php"; ?>
