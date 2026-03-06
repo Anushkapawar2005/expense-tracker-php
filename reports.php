@@ -11,63 +11,135 @@ $user_id = $_SESSION['user_id'];
 $current_month = date('Y-m');
 
 /* ===== Month-wise Expenses ===== */
-$month_expense_query = mysqli_query($conn, "
-    SELECT DATE_FORMAT(expense_date, '%b %Y') AS month,
-           SUM(amount) AS total
-    FROM expenses
-    WHERE user_id='$user_id'
-    GROUP BY month
-    ORDER BY expense_date ASC
+$month_expense_query = mysqli_query($conn,"
+SELECT DATE_FORMAT(expense_date,'%b %Y') AS month,
+SUM(amount) AS total
+FROM expenses
+WHERE user_id='$user_id'
+GROUP BY month
+ORDER BY expense_date ASC
 ");
 
-$expense_months = [];
-$expense_totals = [];
+$expense_months=[];
+$expense_totals=[];
 
-while($row = mysqli_fetch_assoc($month_expense_query)){
-    $expense_months[] = $row['month'];
-    $expense_totals[] = $row['total'];
+while($row=mysqli_fetch_assoc($month_expense_query)){
+$expense_months[]=$row['month'];
+$expense_totals[]=$row['total'];
 }
 
 /* ===== Category-wise Expenses ===== */
-$category_query = mysqli_query($conn, "
-    SELECT c.category_name,
-           SUM(e.amount) AS total
-    FROM expenses e
-    JOIN categories c
-    ON e.category_id = c.category_id
-    WHERE e.user_id='$user_id'
-    GROUP BY e.category_id
+
+$category_query=mysqli_query($conn,"
+SELECT c.category_name,
+SUM(e.amount) AS total
+FROM expenses e
+JOIN categories c
+ON e.category_id=c.category_id
+WHERE e.user_id='$user_id'
+GROUP BY e.category_id
 ");
 
-$categories = [];
-$category_totals = [];
+$categories=[];
+$category_totals=[];
 
-while($row = mysqli_fetch_assoc($category_query)){
-    $categories[] = $row['category_name'];
-    $category_totals[] = $row['total'];
+while($row=mysqli_fetch_assoc($category_query)){
+$categories[]=$row['category_name'];
+$category_totals[]=$row['total'];
 }
 
 /* ===== Current Month Summary ===== */
 
 $budget = mysqli_fetch_assoc(mysqli_query($conn,"
-    SELECT total_budget FROM budgets
-    WHERE user_id='$user_id'
-    AND month='$current_month'
+SELECT total_budget FROM budgets
+WHERE user_id='$user_id'
+AND month='$current_month'
 "))['total_budget'] ?? 0;
 
 $expense = mysqli_fetch_assoc(mysqli_query($conn,"
-    SELECT SUM(amount) AS total FROM expenses
-    WHERE user_id='$user_id'
-    AND DATE_FORMAT(expense_date,'%Y-%m')='$current_month'
+SELECT SUM(amount) AS total FROM expenses
+WHERE user_id='$user_id'
+AND DATE_FORMAT(expense_date,'%Y-%m')='$current_month'
 "))['total'] ?? 0;
 
 $income = mysqli_fetch_assoc(mysqli_query($conn,"
-    SELECT SUM(amount) AS total FROM income
-    WHERE user_id='$user_id'
-    AND DATE_FORMAT(income_date,'%Y-%m')='$current_month'
+SELECT SUM(amount) AS total FROM income
+WHERE user_id='$user_id'
+AND DATE_FORMAT(income_date,'%Y-%m')='$current_month'
 "))['total'] ?? 0;
 
-$balance = $income - $expense;
+$balance=$income-$expense;
+
+
+/* ===== REPORT QUERIES ===== */
+
+/* 1 Month Wise Expense */
+$monthly_expense=mysqli_query($conn,"
+SELECT DATE_FORMAT(expense_date,'%M %Y') AS month,
+SUM(amount) AS total
+FROM expenses
+WHERE user_id='$user_id'
+GROUP BY month
+");
+
+/* 2 Category Wise Expense */
+$category_report=mysqli_query($conn,"
+SELECT c.category_name,SUM(e.amount) AS total
+FROM expenses e
+JOIN categories c
+ON e.category_id=c.category_id
+WHERE e.user_id='$user_id'
+GROUP BY c.category_name
+");
+
+/* 3 Highest Spending Category */
+$highest_category=mysqli_query($conn,"
+SELECT c.category_name,SUM(e.amount) AS total
+FROM expenses e
+JOIN categories c
+ON e.category_id=c.category_id
+WHERE e.user_id='$user_id'
+GROUP BY c.category_name
+ORDER BY total DESC
+LIMIT 1
+");
+
+/* 4 Month Wise Income */
+$monthly_income=mysqli_query($conn,"
+SELECT DATE_FORMAT(income_date,'%M %Y') AS month,
+SUM(amount) AS total
+FROM income
+WHERE user_id='$user_id'
+GROUP BY month
+");
+
+/* 5 Budget vs Expense */
+$budget_report=mysqli_query($conn,"
+SELECT b.month,b.total_budget,
+IFNULL(SUM(e.amount),0) AS expense
+FROM budgets b
+LEFT JOIN expenses e
+ON DATE_FORMAT(e.expense_date,'%Y-%m')=b.month
+AND b.user_id=e.user_id
+WHERE b.user_id='$user_id'
+GROUP BY b.month
+");
+
+/* 6 Net Balance */
+$balance_report=mysqli_query($conn,"
+SELECT 
+DATE_FORMAT(i.income_date,'%M %Y') AS month,
+SUM(i.amount) AS income,
+(SELECT IFNULL(SUM(e.amount),0)
+FROM expenses e
+WHERE DATE_FORMAT(e.expense_date,'%Y-%m')=
+DATE_FORMAT(i.income_date,'%Y-%m')
+AND e.user_id='$user_id') AS expense
+FROM income i
+WHERE i.user_id='$user_id'
+GROUP BY month
+");
+
 ?>
 
 <!DOCTYPE html>
@@ -75,113 +147,117 @@ $balance = $income - $expense;
 <head>
 <title>Reports Dashboard</title>
 
-<!-- Shared CSS -->
 <link rel="stylesheet" href="css/header.css">
 <link rel="stylesheet" href="css/footer.css">
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
-/* ===== PAGE LAYOUT ===== */
-
 body{
-    font-family:'Segoe UI', Arial, sans-serif;
-    background:#f4f6f9;
-    margin:0;
-
-    display:flex;
-    flex-direction:column;
-    min-height:100vh;
+font-family:'Segoe UI',Arial;
+background:#f4f6f9;
+margin:0;
+display:flex;
+flex-direction:column;
+min-height:100vh;
 }
-
-/* Wrapper */
 
 .page-content{
-    flex:1;
-    padding:30px 20px;
+flex:1;
+padding:30px 20px;
 }
-
-/* Container */
 
 .container{
-    max-width:1100px;
-    margin:auto;
+max-width:1100px;
+margin:auto;
 }
-
-/* Header Row */
 
 .page-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:25px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:25px;
 }
 
-.page-header h2{
-    margin:0;
-}
-
-/* Back Button */
-
-.back-btn{
-    text-decoration:none;
-    padding:8px 14px;
-    background:#4f46e5;
-    color:#fff;
-    border-radius:8px;
-    font-size:14px;
-}
-
-/* ===== SUMMARY CARDS ===== */
+/* CARDS */
 
 .cards{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:18px;
-    margin-bottom:30px;
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:18px;
+margin-bottom:30px;
 }
 
 .card{
-    padding:20px;
-    border-radius:14px;
-    color:#fff;
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
+padding:20px;
+border-radius:14px;
+color:white;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
 }
 
 .card h3{
-    margin:0;
-    font-size:15px;
-    opacity:.9;
+margin:0;
+font-size:15px;
 }
 
 .card h2{
-    margin-top:8px;
+margin-top:8px;
 }
 
-/* Card Colors */
+.card-blue{background:#6366f1;}
+.card-red{background:#ef4444;}
+.card-green{background:#10b981;}
+.card-darkblue{background:#1d4ed8;}
 
-.card-blue{ background:#6366f1; }
-.card-red{ background:#ef4444; }
-.card-green{ background:#10b981; }
-.card-darkblue{ background:#1d4ed8; }
-
-/* ===== CHARTS ===== */
+/* CHARTS */
 
 .charts{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:20px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+margin-bottom:40px;
 }
 
 .chart-box{
-    background:#fff;
-    padding:20px;
-    border-radius:14px;
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
+background:white;
+padding:20px;
+border-radius:14px;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
 }
 
-.chart-box h3{
-    margin-bottom:15px;
+.chart-box canvas{
+max-height:260px;
+}
+
+/* REPORTS */
+
+.report-section{
+margin-top:20px;
+}
+
+.report-section h2{
+margin-top:35px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+background:white;
+margin-top:10px;
+margin-bottom:30px;
+box-shadow:0 5px 15px rgba(0,0,0,.05);
+}
+
+th,td{
+padding:10px;
+border:1px solid #ddd;
+text-align:center;
+}
+
+th{
+background:#1f2937;
+color:white;
 }
 
 /* Responsive */
@@ -189,11 +265,11 @@ body{
 @media(max-width:900px){
 
 .cards{
-    grid-template-columns:1fr 1fr;
+grid-template-columns:1fr 1fr;
 }
 
 .charts{
-    grid-template-columns:1fr;
+grid-template-columns:1fr;
 }
 
 }
@@ -203,20 +279,17 @@ body{
 
 <body>
 
-<!-- ===== HEADER ===== -->
 <?php include "includes/header.php"; ?>
 
-<!-- ===== PAGE CONTENT ===== -->
 <div class="page-content">
-
 <div class="container">
 
-<!-- Title Row -->
 <div class="page-header">
 <h2>Reports Dashboard</h2>
 </div>
 
-<!-- Summary Cards -->
+<!-- SUMMARY CARDS -->
+
 <div class="cards">
 
 <div class="card card-blue">
@@ -241,7 +314,8 @@ body{
 
 </div>
 
-<!-- Charts -->
+<!-- CHARTS -->
+
 <div class="charts">
 
 <div class="chart-box">
@@ -256,15 +330,113 @@ body{
 
 </div>
 
+
+<!-- REPORT TABLES -->
+
+<div class="report-section">
+
+<h2>1. Month Wise Expense Report</h2>
+<table>
+<tr><th>Month</th><th>Total Expense</th></tr>
+<?php while($row=mysqli_fetch_assoc($monthly_expense)){ ?>
+<tr>
+<td><?php echo $row['month']; ?></td>
+<td>₹ <?php echo $row['total']; ?></td>
+</tr>
+<?php } ?>
+</table>
+
+
+<h2>2. Category Wise Expense Report</h2>
+<table>
+<tr><th>Category</th><th>Total Expense</th></tr>
+<?php while($row=mysqli_fetch_assoc($category_report)){ ?>
+<tr>
+<td><?php echo $row['category_name']; ?></td>
+<td>₹ <?php echo $row['total']; ?></td>
+</tr>
+<?php } ?>
+</table>
+
+
+<h2>3. Highest Spending Category</h2>
+<table>
+<tr><th>Category</th><th>Total Expense</th></tr>
+<?php $row=mysqli_fetch_assoc($highest_category); ?>
+<tr>
+<td><?php echo $row['category_name']; ?></td>
+<td>₹ <?php echo $row['total']; ?></td>
+</tr>
+</table>
+
+
+<h2>4. Month Wise Income Report</h2>
+<table>
+<tr><th>Month</th><th>Total Income</th></tr>
+<?php while($row=mysqli_fetch_assoc($monthly_income)){ ?>
+<tr>
+<td><?php echo $row['month']; ?></td>
+<td>₹ <?php echo $row['total']; ?></td>
+</tr>
+<?php } ?>
+</table>
+
+
+<h2>5. Budget vs Expense Report</h2>
+<table>
+<tr>
+<th>Month</th>
+<th>Budget</th>
+<th>Expense</th>
+<th>Status</th>
+</tr>
+
+<?php while($row=mysqli_fetch_assoc($budget_report)){ ?>
+<tr>
+<td><?php echo $row['month']; ?></td>
+<td>₹ <?php echo $row['total_budget']; ?></td>
+<td>₹ <?php echo $row['expense']; ?></td>
+<td>
+<?php
+if($row['expense']>$row['total_budget'])
+echo "Exceeded";
+else
+echo "Within Budget";
+?>
+</td>
+</tr>
+<?php } ?>
+</table>
+
+
+<h2>6. Net Balance Report</h2>
+<table>
+<tr>
+<th>Month</th>
+<th>Income</th>
+<th>Expense</th>
+<th>Net Balance</th>
+</tr>
+
+<?php while($row=mysqli_fetch_assoc($balance_report)){ ?>
+<tr>
+<td><?php echo $row['month']; ?></td>
+<td>₹ <?php echo $row['income']; ?></td>
+<td>₹ <?php echo $row['expense']; ?></td>
+<td>₹ <?php echo $row['income']-$row['expense']; ?></td>
+</tr>
+<?php } ?>
+</table>
+
+</div>
+
 </div>
 </div>
 
-<!-- ===== FOOTER ===== -->
 <?php include "includes/footer.php"; ?>
 
 <script>
 
-/* Expense Line Chart */
 new Chart(document.getElementById('expenseChart'),{
 type:'line',
 data:{
@@ -279,14 +451,12 @@ tension:0.4
 }
 });
 
-/* Category Doughnut */
 new Chart(document.getElementById('categoryChart'),{
 type:'doughnut',
 data:{
 labels: <?php echo json_encode($categories); ?>,
 datasets:[{
-data: <?php echo json_encode($category_totals); ?>,
-borderWidth:1
+data: <?php echo json_encode($category_totals); ?>
 }]
 }
 });
