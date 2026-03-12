@@ -140,6 +140,16 @@ WHERE i.user_id='$user_id'
 GROUP BY month
 ");
 
+/* 7 Date Wise Expense Report */
+
+$datewise_report=mysqli_query($conn,"
+SELECT expense_date,
+SUM(amount) AS total
+FROM expenses
+WHERE user_id='$user_id'
+GROUP BY expense_date
+ORDER BY expense_date DESC
+");
 ?>
 
 <!DOCTYPE html>
@@ -427,6 +437,26 @@ echo "Within Budget";
 </tr>
 <?php } ?>
 </table>
+
+
+
+<h2>7. Date Wise Expense Report</h2>
+
+<table>
+<tr>
+<th>Date</th>
+<th>Total Expense</th>
+</tr>
+
+<?php while($row=mysqli_fetch_assoc($datewise_report)){ ?>
+<tr>
+<td><?php echo $row['expense_date']; ?></td>
+<td>₹ <?php echo $row['total']; ?></td>
+</tr>
+<?php } ?>
+
+</table>
+
 
 </div>
 
