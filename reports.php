@@ -82,7 +82,18 @@ WHERE user_id='$user_id'
 GROUP BY month
 ");
 
-/* 2 Category Wise Expense */
+/* 2 Date Wise Expense Report */
+
+$datewise_report=mysqli_query($conn,"
+SELECT expense_date,
+SUM(amount) AS total
+FROM expenses
+WHERE user_id='$user_id'
+GROUP BY expense_date
+ORDER BY expense_date DESC
+");
+
+/* 3 Category Wise Expense */
 $category_report=mysqli_query($conn,"
 SELECT c.category_name,SUM(e.amount) AS total
 FROM expenses e
@@ -92,7 +103,7 @@ WHERE e.user_id='$user_id'
 GROUP BY c.category_name
 ");
 
-/* 3 Highest Spending Category */
+/* 4 Highest Spending Category */
 $highest_category=mysqli_query($conn,"
 SELECT c.category_name,SUM(e.amount) AS total
 FROM expenses e
@@ -104,7 +115,7 @@ ORDER BY total DESC
 LIMIT 1
 ");
 
-/* 4 Month Wise Income */
+/* 5 Month Wise Income */
 $monthly_income=mysqli_query($conn,"
 SELECT DATE_FORMAT(income_date,'%M %Y') AS month,
 SUM(amount) AS total
@@ -113,7 +124,7 @@ WHERE user_id='$user_id'
 GROUP BY month
 ");
 
-/* 5 Budget vs Expense */
+/* 6 Budget vs Expense */
 $budget_report=mysqli_query($conn,"
 SELECT b.month,b.total_budget,
 IFNULL(SUM(e.amount),0) AS expense
@@ -125,7 +136,7 @@ WHERE b.user_id='$user_id'
 GROUP BY b.month
 ");
 
-/* 6 Net Balance */
+/* 7 Net Balance */
 $balance_report=mysqli_query($conn,"
 SELECT 
 DATE_FORMAT(i.income_date,'%M %Y') AS month,
@@ -140,16 +151,7 @@ WHERE i.user_id='$user_id'
 GROUP BY month
 ");
 
-/* 7 Date Wise Expense Report */
 
-$datewise_report=mysqli_query($conn,"
-SELECT expense_date,
-SUM(amount) AS total
-FROM expenses
-WHERE user_id='$user_id'
-GROUP BY expense_date
-ORDER BY expense_date DESC
-");
 ?>
 
 <!DOCTYPE html>
@@ -356,8 +358,25 @@ grid-template-columns:1fr;
 <?php } ?>
 </table>
 
+<h2>2. Date Wise Expense Report</h2>
 
-<h2>2. Category Wise Expense Report</h2>
+<table>
+<tr>
+<th>Date</th>
+<th>Total Expense</th>
+</tr>
+
+<?php while($row=mysqli_fetch_assoc($datewise_report)){ ?>
+<tr>
+<td><?php echo $row['expense_date']; ?></td>
+<td>₹ <?php echo $row['total']; ?></td>
+</tr>
+<?php } ?>
+
+</table>
+
+
+<h2>3. Category Wise Expense Report</h2>
 <table>
 <tr><th>Category</th><th>Total Expense</th></tr>
 <?php while($row=mysqli_fetch_assoc($category_report)){ ?>
@@ -369,7 +388,7 @@ grid-template-columns:1fr;
 </table>
 
 
-<h2>3. Highest Spending Category</h2>
+<h2>4. Highest Spending Category</h2>
 <table>
 <tr><th>Category</th><th>Total Expense</th></tr>
 <?php $row=mysqli_fetch_assoc($highest_category); ?>
@@ -380,7 +399,7 @@ grid-template-columns:1fr;
 </table>
 
 
-<h2>4. Month Wise Income Report</h2>
+<h2>5. Month Wise Income Report</h2>
 <table>
 <tr><th>Month</th><th>Total Income</th></tr>
 <?php while($row=mysqli_fetch_assoc($monthly_income)){ ?>
@@ -392,7 +411,7 @@ grid-template-columns:1fr;
 </table>
 
 
-<h2>5. Budget vs Expense Report</h2>
+<h2>6. Budget vs Expense Report</h2>
 <table>
 <tr>
 <th>Month</th>
@@ -419,7 +438,7 @@ echo "Within Budget";
 </table>
 
 
-<h2>6. Net Balance Report</h2>
+<h2>7. Net Balance Report</h2>
 <table>
 <tr>
 <th>Month</th>
@@ -440,22 +459,7 @@ echo "Within Budget";
 
 
 
-<h2>7. Date Wise Expense Report</h2>
 
-<table>
-<tr>
-<th>Date</th>
-<th>Total Expense</th>
-</tr>
-
-<?php while($row=mysqli_fetch_assoc($datewise_report)){ ?>
-<tr>
-<td><?php echo $row['expense_date']; ?></td>
-<td>₹ <?php echo $row['total']; ?></td>
-</tr>
-<?php } ?>
-
-</table>
 
 
 </div>
